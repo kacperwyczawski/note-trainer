@@ -61,40 +61,18 @@ h1 {
     color: #888;
 }
 
-.settings-top form {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    background: #e5e7eb;
-    padding: .5rem;
-    border-radius: 0.5em;
-}
-
 .settings-top label {
-    position: relative;
-    padding: 0.3em 0.2em;
-    font-size: 1em;
-    border: none;
-    border-radius: .5rem;
-    background: transparent;
-    color: #213547;
-    cursor: pointer;
-    transition:
-        background 0.2s,
-        color 0.2s;
-    user-select: none;
-    width: 100%;
-    text-align: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
 }
 
-.settings-top input[type="radio"] {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.settings-top label:has(input[type="radio"]:checked) {
-    background: #60a5fa;
-    color: #fff;
+.settings-top input[type="checkbox"] {
+    vertical-align: middle;
+    accent-color: #646cff;
+    width: 1.1rem;
+    height: 1.1rem;
+    margin: 0;
 }
 
 .center-letter {
