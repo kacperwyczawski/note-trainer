@@ -1,7 +1,7 @@
 import "./style.css";
 import { PitchDetector } from "pitchy";
 
-// Utility: Convert Hz to note name
+// Convert Hz to musical note name (e.g., A4, C#5)
 function hzToNoteName(hz: number): string {
   if (!hz || hz <= 0) return "-";
   const noteNames = [
@@ -21,7 +21,7 @@ function hzToNoteName(hz: number): string {
   const A4 = 440;
   const semitones = 12 * Math.log2(hz / A4);
   const midi = Math.round(69 + semitones);
-  const note = noteNames[(midi + 1200) % 12]; // +1200 to handle negatives
+  const note = noteNames[(midi + 1200) % 12];
   const octave = Math.floor(midi / 12) - 1;
   return `${note}${octave}`;
 }
@@ -30,43 +30,46 @@ async function setupPitchDetection() {
   const settingsBottom = document.querySelector(".settings-bottom");
   if (!settingsBottom) return;
 
-  // Request mic access
-  const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-  const audioContext = new AudioContext();
-  const source = audioContext.createMediaStreamSource(stream);
+  if (
+    typeof navigator === "undefined" ||
+    !navigator.mediaDevices ||
+    !navigator.mediaDevices.getUserMedia
+  ) {
+    settingsBottom.textContent =
+      "Microphone access is not supported in this browser or environment.";
+    return;
+  }
 
-  // Buffer size and detector
-  const inputLength = 2048;
-  const detector = PitchDetector.forFloat32Array(inputLength);
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    const audioContext = new AudioContext();
+    await audioContext.audioWorklet.addModule("/pitch-processor.js");
 
-  // Create ScriptProcessorNode for audio analysis
-  const processor = audioContext.createScriptProcessor(inputLength, 1, 1);
+    const source = audioContext.createMediaStreamSource(stream);
+    const workletNode = new AudioWorkletNode(audioContext, "pitch-processor");
+    source.connect(workletNode);
 
-  source.connect(processor);
-  processor.connect(audioContext.destination);
+    const inputLength = 2048;
+    const detector = PitchDetector.forFloat32Array(inputLength);
 
-  processor.onaudioprocess = (event) => {
-    const input = event.inputBuffer.getChannelData(0);
-    // Copy to new Float32Array (pitchy expects a real array, not a view)
-    const buffer = new Float32Array(input);
-    const [pitch, clarity] = detector.findPitch(
-      buffer,
-      audioContext.sampleRate,
-    );
+    workletNode.port.onmessage = (event: MessageEvent) => {
+      const buffer = new Float32Array(event.data);
+      const [pitch, clarity] = detector.findPitch(
+        buffer,
+        audioContext.sampleRate,
+      );
 
-    let noteName = "-";
-    let pitchDisplay = "-";
-    if (clarity > 0.95 && pitch) {
-      noteName = hzToNoteName(pitch);
-      pitchDisplay = pitch.toFixed(2) + " Hz";
-    }
-    settingsBottom.textContent = `Detected: ${pitchDisplay} (${noteName})`;
-  };
-}
-
-setupPitchDetection().catch((err) => {
-  const settingsBottom = document.querySelector(".settings-bottom");
-  if (settingsBottom) {
+      let noteName = "-";
+      let pitchDisplay = "-";
+      if (clarity > 0.95 && pitch) {
+        noteName = hzToNoteName(pitch);
+        pitchDisplay = pitch.toFixed(2) + " Hz";
+      }
+      settingsBottom.textContent = `Detected: ${pitchDisplay} (${noteName})`;
+    };
+  } catch (err) {
     settingsBottom.textContent = "Microphone access denied or error: " + err;
   }
-});
+}
+
+setupPitchDetection();
