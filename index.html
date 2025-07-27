@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="h-full">
     <head>
         <meta charset="UTF-8" />
         <link rel="icon" type="image/svg+xml" href="/vite.svg" />
@@ -7,23 +7,39 @@
         <title>Vite + TS</title>
         <script type="module" src="/src/main.ts"></script>
     </head>
-    <body>
-        <div class="settings settings-top">
-            <label>
+    <body class="p-4 grid grid-rows-[1fr_auto_1fr] h-full">
+        <div class="text-center text-lg text-gray-400">
+            <label class="inline-flex items-center gap-2">
                 <input
                     type="checkbox"
                     id="include-accidentals"
                     name="include-accidentals"
+                    class="align-middle accent-blue-500 w-5 h-5 m-0"
                 />
                 Include accidentals
             </label>
         </div>
-        <div class="center-letter">E</div>
-        <div class="settings settings-bottom">
-            <div id="svg-feedback">
-                <img id="feedback-img" src="" alt="" />
-                <span id="detected-info"></span>
-            </div>
+        <div id="note" class="text-center text-[10rem] font-semibold">E</div>
+        <div
+            class="p-4 text-center text-lg text-gray-400 flex flex-col justify-between items-center"
+        >
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="w-16 h-16 text-green-700 invisible"
+                id="check"
+            >
+                <path d="M21.801 10A10 10 0 1 1 17 3.335" />
+                <path d="m9 11 3 3L22 4" />
+            </svg>
+            <div id="info" class="text-gray-400"></div>
         </div>
     </body>
 </html>
