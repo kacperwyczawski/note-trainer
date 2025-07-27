@@ -168,7 +168,7 @@ async function setupPitchDetection() {
 					setTimeout(() => {
 						selectAndDisplayNewNote();
 						awaitingNext = false;
-					}, 1200);
+					}, 200);
 				} else {
 					setResult(false, detectedText);
 				}
