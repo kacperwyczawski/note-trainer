@@ -1,120 +1,47 @@
 import "./style.css";
 import { PitchDetector } from "pitchy";
+import { getNotes, type NoteOptions } from "./noteUtils";
 
-// Note sets
-const ALL_NOTES = [
-  "C",
-  "C#",
-  "D",
-  "D#",
-  "E",
-  "F",
-  "F#",
-  "G",
-  "G#",
-  "A",
-  "A#",
-  "B",
-];
-const NATURAL_NOTES = ["C", "D", "E", "F", "G", "A", "B"];
-
-// German notation equivalents (sharps as "is")
-const ALL_NOTES_GERMAN = [
-  "C",
-  "Cis",
-  "D",
-  "Dis",
-  "E",
-  "F",
-  "Fis",
-  "G",
-  "Gis",
-  "A",
-  "Ais",
-  "H", // B in English is H in German
-];
-const NATURAL_NOTES_GERMAN = ["C", "D", "E", "F", "G", "A", "H"];
-
-// Utility: Get current note set selection from checkbox
-function includeAccidentals(): boolean {
-  const checkbox = document.getElementById(
+function getCurrentNoteOptions(): NoteOptions {
+  const accCheckbox = document.getElementById(
     "include-accidentals",
   ) as HTMLInputElement | null;
-  return !!checkbox?.checked;
-}
-
-// Utility: Check if German notation is enabled
-function useGermanNotation(): boolean {
-  const checkbox = document.getElementById(
+  const germanCheckbox = document.getElementById(
     "german-notation",
   ) as HTMLInputElement | null;
-  return !!checkbox?.checked;
+  return {
+    includeAccidentals: !!accCheckbox?.checked,
+    useGermanNotation: !!germanCheckbox?.checked,
+  };
 }
 
-// Utility: Get notes for current note set
-function getNotesForCurrentSet(): string[] {
-  if (useGermanNotation()) {
-    return includeAccidentals() ? ALL_NOTES_GERMAN : NATURAL_NOTES_GERMAN;
-  }
-  return includeAccidentals() ? ALL_NOTES : NATURAL_NOTES;
-}
-
-// Utility: Pick a random note from the current set
 function pickRandomNote(): string {
-  const notes = getNotesForCurrentSet();
+  const notes = getNotes(getCurrentNoteOptions());
   const idx = Math.floor(Math.random() * notes.length);
   return notes[idx];
 }
 
-// Utility: Extract note letter (without octave) from note name string (e.g., "C#4" -> "C#")
 function extractNoteLetter(noteName: string): string {
   return noteName.replace(/[0-9-]/g, "");
 }
 
-// Convert Hz to musical note name (e.g., A4, Cis5), with German notation support
+// Convert Hz to musical note name (e.g., A4, Cis5), with German notation support via noteUtils
 function hzToNoteName(hz: number): string {
   if (!hz || hz <= 0) return "-";
-  const ALL_NOTE_NAMES = [
-    "C",
-    "C#",
-    "D",
-    "D#",
-    "E",
-    "F",
-    "F#",
-    "G",
-    "G#",
-    "A",
-    "A#",
-    "B",
-  ];
-  const ALL_NOTE_NAMES_GERMAN = [
-    "C",
-    "Cis",
-    "D",
-    "Dis",
-    "E",
-    "F",
-    "Fis",
-    "G",
-    "Gis",
-    "A",
-    "Ais",
-    "H",
-  ];
   const A4 = 440;
   const semitones = 12 * Math.log2(hz / A4);
   const midi = Math.round(69 + semitones);
   const noteIdx = (midi + 1200) % 12;
   const octave = Math.floor(midi / 12) - 1;
 
-  let note = ALL_NOTE_NAMES[noteIdx];
-  if (useGermanNotation()) {
-    note = ALL_NOTE_NAMES_GERMAN[noteIdx];
-  }
-  // If naturals only, filter out accidentals
-  if (!includeAccidentals() && (note.includes("#") || note.endsWith("is")))
-    return "-";
+  const options = getCurrentNoteOptions();
+  const notes = getNotes({
+    includeAccidentals: true, // Always get all notes for display
+    useGermanNotation: options.useGermanNotation,
+  });
+
+  const note = notes[noteIdx];
+  if (!note) return "-";
   return `${note}${octave}`;
 }
 
