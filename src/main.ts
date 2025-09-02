@@ -127,10 +127,7 @@ async function setupPitchDetection() {
         noteName = hzToNoteName(pitch);
       }
 
-      // Always show detected pitch and note name
-      const pitchDisplay =
-        pitch && clarity > 0.95 ? `${pitch.toFixed(2)} Hz` : "-";
-      const detectedText = `Detected: ${pitchDisplay} (${noteName})`;
+      const detectedText = `Detected: ${noteName}`;
 
       // Only check if a valid note is detected and not waiting for next note
       if (!awaitingNext && noteName !== "-") {
